@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Image to ASCII Art Converter</title>
+  <style>
+    #output {
+      white-space: pre-wrap;
+      font-family: monospace;
+    }
+  </style>
+</head>
+<body>
+  <input type="file" id="imageInput" accept="image/*">
+  <button onclick="convertImageToASCII()">Convert to ASCII Art</button>
+  <div id="output"></div>
+
+  <script>
+    function convertImageToASCII() {
+      const input = document.getElementById('imageInput');
+      const output = document.getElementById('output');
+
+      const file = input.files[0];
+      if (file) {
+        const reader = new FileReader();
+
+        reader.onload = function(e) {
+          const image = new Image();
+          image.src = e.target.result;
+
+          image.onload = function() {
+            const asciiArt = imageToASCIIArt(image, 500, 500);
+            output.innerHTML = '<pre>' + asciiArt + '</pre>';
+          };
+        };
+
+        reader.readAsDataURL(file);
+      }
+    }
+
+    function imageToASCIIArt(image, width, height) {
+      const canvas = document.createElement('canvas');
+      const context = canvas.getContext('2d');
+
+      canvas.width = width;
+      canvas.height = height;
+
+      context.drawImage(image, 0, 0, width, height);
+
+      let asciiArt = '';
+
+      for (let y = 0; y < height; y += 10) {
+        for (let x = 0; x < width; x += 5) {
+          const pixel = context.getImageData(x, y, 1, 1).data;
+          const brightness = (pixel[0] + pixel[1] + pixel[2]) / 3;
+          const asciiChar = getAsciiChar(brightness);
+          asciiArt += asciiChar;
+        }
+        asciiArt += '\n';
+      }
+
+      return asciiArt;
+    }
+
+    function getAsciiChar(brightness) {
+      const asciiChars = '!"№;%:?*()@#$^{}[]';
+
+      const index = Math.floor((brightness / 255) * (asciiChars.length - 1));
+      return asciiChars.charAt(index);
+    }
+  </script>
+</body>
+</html>
